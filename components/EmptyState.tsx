@@ -10,15 +10,14 @@ interface EmptyStateProps {
   isResetting?: boolean;
 }
 
-export const EmptyState: React.FC<EmptyStateProps> = ({
+export const EmptyState = ({
   onReset,
   onViewMatches,
   matchesCount,
   isResetting = false,
-}) => {
+}: EmptyStateProps) => {
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-6 text-center animate-fade-in my-auto">
-      {/* Animated Radar Pulse */}
       <div className="relative mb-6">
         <div className="absolute inset-0 rounded-full bg-coy-rose/20 animate-ping" />
         <div className="w-24 h-24 rounded-full bg-coy-surface border border-coy-border/80 flex items-center justify-center relative shadow-2xl">
@@ -35,7 +34,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         No More Profiles Nearby
       </h3>
       <p className="text-sm text-gray-400 max-w-xs mb-8">
-        You’ve swiped through all available profiles in your area. Check back later or reset your feed to demo again!
+        You’ve seen everyone in your area for now. Check back later or reset the feed to swipe again.
       </p>
 
       <div className="flex flex-col sm:flex-row gap-3 w-full max-w-xs">
@@ -55,7 +54,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-coy-surface border border-coy-border hover:bg-coy-border/80 text-white font-medium text-sm transition disabled:opacity-50"
         >
           <RotateCcw className={`w-4 h-4 ${isResetting ? 'animate-spin text-coy-rose' : ''}`} />
-          <span>Reset Demo</span>
+          <span>Reset Feed</span>
         </button>
       </div>
     </div>

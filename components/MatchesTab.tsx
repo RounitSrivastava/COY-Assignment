@@ -10,10 +10,10 @@ interface MatchesTabProps {
   onGoToDiscover: () => void;
 }
 
-export const MatchesTab: React.FC<MatchesTabProps> = ({
+export const MatchesTab = ({
   matches,
   onGoToDiscover,
-}) => {
+}: MatchesTabProps) => {
   const [activeChatMatch, setActiveChatMatch] = useState<MatchRecord | null>(null);
   const [messages, setMessages] = useState<Record<string, Array<{ text: string; sender: 'me' | 'them'; time: string }>>>({});
   const [inputText, setInputText] = useState('');
@@ -22,24 +22,23 @@ export const MatchesTab: React.FC<MatchesTabProps> = ({
     if (!inputText.trim()) return;
 
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const newMsg = { text: inputText.trim(), sender: 'me' as const, time };
+    const userMsg = { text: inputText.trim(), sender: 'me' as const, time };
 
     setMessages((prev) => ({
       ...prev,
-      [matchId]: [...(prev[matchId] || []), newMsg],
+      [matchId]: [...(prev[matchId] || []), userMsg],
     }));
     setInputText('');
 
-    // Simulated sweet reply after 1.2s for interactive demo feel
+    // quick automated reply for demo feel
     setTimeout(() => {
-      const matchName = activeChatMatch?.profile.name.split(' ')[0] || 'They';
-      const sampleReplies = [
+      const replies = [
         `Hey! So glad we matched ✨ Loved your vibe.`,
-        `Hi there! Great taste in music by the way 😊`,
+        `Hi! Great taste in music by the way 😊`,
         `Hey! I was hoping you'd swipe right! How's your week going?`,
-        `Haha, hey! What's the story behind your bio?`,
+        `Haha hey! What's the story behind your bio?`,
       ];
-      const reply = sampleReplies[Math.floor(Math.random() * sampleReplies.length)];
+      const reply = replies[Math.floor(Math.random() * replies.length)];
       const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
       setMessages((prev) => ({
@@ -49,12 +48,11 @@ export const MatchesTab: React.FC<MatchesTabProps> = ({
           { text: reply, sender: 'them' as const, time: replyTime },
         ],
       }));
-    }, 1200);
+    }, 1000);
   };
 
   return (
     <div className="flex-1 flex flex-col px-4 pb-24 pt-2 w-full max-w-md mx-auto animate-fade-in">
-      {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -69,26 +67,24 @@ export const MatchesTab: React.FC<MatchesTabProps> = ({
         </div>
       </div>
 
-      {/* Empty State */}
       {matches.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center my-auto">
           <div className="w-16 h-16 rounded-3xl bg-coy-surface border border-coy-border flex items-center justify-center mb-4 text-coy-rose">
             <Heart className="w-8 h-8 fill-coy-rose/20 stroke-[2]" />
           </div>
-          <h3 className="text-lg font-bold text-white mb-1">No Matches Yet</h3>
+          <h3 className="text-lg font-bold text-white mb-1">No matches yet</h3>
           <p className="text-xs text-gray-400 max-w-xs mb-6">
-            When you and someone else both like each other, your match will appear here. Keep discovering!
+            When you and someone else both like each other, your match will show up here.
           </p>
           <button
             onClick={onGoToDiscover}
             className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-coy text-white text-xs font-semibold shadow-lg shadow-coy-rose/30 hover:opacity-95 transition"
           >
             <Sparkles className="w-4 h-4" />
-            <span>Discover People</span>
+            <span>Start Swiping</span>
           </button>
         </div>
       ) : (
-        /* Matches Grid */
         <div className="grid grid-cols-2 gap-3 overflow-y-auto pb-4">
           {matches.map((item) => (
             <div
@@ -96,7 +92,6 @@ export const MatchesTab: React.FC<MatchesTabProps> = ({
               onClick={() => setActiveChatMatch(item)}
               className="group relative rounded-2xl overflow-hidden glass border border-coy-border hover:border-coy-rose/50 transition cursor-pointer shadow-lg aspect-[3/4]"
             >
-              {/* Photo */}
               <Image
                 src={item.profile.photo}
                 alt={item.profile.name}
@@ -105,16 +100,13 @@ export const MatchesTab: React.FC<MatchesTabProps> = ({
                 sizes="(max-width: 480px) 50vw, 200px"
               />
 
-              {/* Gradient Scrim */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
 
-              {/* Match Badge */}
               <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-gradient-coy text-white text-[10px] font-bold shadow-md flex items-center gap-1">
                 <Heart className="w-2.5 h-2.5 fill-white" />
                 <span>Match</span>
               </div>
 
-              {/* Profile Details at bottom */}
               <div className="absolute bottom-0 inset-x-0 p-3 text-white">
                 <div className="flex items-baseline gap-1.5">
                   <span className="font-bold text-sm truncate">
@@ -132,7 +124,7 @@ export const MatchesTab: React.FC<MatchesTabProps> = ({
 
                 <div className="mt-2 flex items-center justify-between">
                   <span className="text-[10px] text-coy-300 font-medium">
-                    Tap to chat
+                    Say hi
                   </span>
                   <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-coy-rose transition">
                     <MessageCircle className="w-3.5 h-3.5 text-white" />
@@ -144,11 +136,9 @@ export const MatchesTab: React.FC<MatchesTabProps> = ({
         </div>
       )}
 
-      {/* Interactive Chat Modal */}
       {activeChatMatch && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
           <div className="relative w-full max-w-sm h-[580px] rounded-3xl glass border border-coy-border flex flex-col overflow-hidden shadow-2xl">
-            {/* Chat Header */}
             <div className="px-4 py-3 bg-coy-surface/90 border-b border-coy-border flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <button
@@ -188,32 +178,24 @@ export const MatchesTab: React.FC<MatchesTabProps> = ({
               </button>
             </div>
 
-            {/* Chat Messages Body */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              {/* Match Banner inside chat */}
               <div className="text-center py-2">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-coy-surface border border-coy-border text-[11px] text-gray-300">
                   <Heart className="w-3 h-3 text-coy-rose fill-coy-rose" />
                   <span>Matched on Coy</span>
                 </div>
-                <p className="text-[11px] text-gray-500 mt-2">
-                  Break the ice! Say something coy.
-                </p>
               </div>
 
-              {/* Quick Icebreaker Pills */}
               {(!messages[activeChatMatch.id] || messages[activeChatMatch.id].length === 0) && (
                 <div className="flex flex-col gap-1.5 pt-2">
                   {[
                     `Hey! Loved your bio about ${activeChatMatch.profile.interests[0] || 'travel'} 👋`,
                     `Coffee or tea? The most important first question ☕`,
-                    `Hey ${activeChatMatch.profile.name.split(' ')[0]}! Great taste in music 🎶`,
+                    `Hey ${activeChatMatch.profile.name}! Great taste in music 🎶`,
                   ].map((icebreaker, idx) => (
                     <button
                       key={idx}
-                      onClick={() => {
-                        setInputText(icebreaker);
-                      }}
+                      onClick={() => setInputText(icebreaker)}
                       className="text-left text-xs p-2 rounded-xl bg-coy-surface/60 hover:bg-coy-surface border border-coy-border/60 text-gray-300 hover:text-white transition"
                     >
                       💡 {icebreaker}
@@ -222,7 +204,6 @@ export const MatchesTab: React.FC<MatchesTabProps> = ({
                 </div>
               )}
 
-              {/* Message History */}
               {(messages[activeChatMatch.id] || []).map((msg, index) => (
                 <div
                   key={index}
@@ -246,7 +227,6 @@ export const MatchesTab: React.FC<MatchesTabProps> = ({
               ))}
             </div>
 
-            {/* Chat Input Bar */}
             <div className="p-3 bg-coy-surface/90 border-t border-coy-border">
               <form
                 onSubmit={(e) => {

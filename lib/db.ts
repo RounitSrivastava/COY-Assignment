@@ -3,41 +3,41 @@ import path from 'path';
 import { Profile, PublicProfile, SwipeRecord, MatchRecord, SwipeAction } from '@/types';
 import { SEED_PROFILES } from './seedData';
 
-interface DatabaseSchema {
+interface DbData {
   profiles: Profile[];
   swipes: Record<string, SwipeRecord>;
   matches: MatchRecord[];
 }
 
 const DATA_DIR = path.join(process.cwd(), 'data');
-const DB_PATH = path.join(DATA_DIR, 'db.json');
+const DB_FILE = path.join(DATA_DIR, 'db.json');
 
-function sanitizeProfile(profile: Profile): PublicProfile {
-  const { hasLikedCurrentUser, ...rest } = profile;
-  return rest;
+// Strip hasLikedCurrentUser so client never sees it
+function toPublicProfile(profile: Profile): PublicProfile {
+  const { hasLikedCurrentUser, ...publicData } = profile;
+  return publicData;
 }
 
-export function getDb(): DatabaseSchema {
+export function getDb(): DbData {
   try {
     if (!fs.existsSync(DATA_DIR)) {
       fs.mkdirSync(DATA_DIR, { recursive: true });
     }
 
-    if (!fs.existsSync(DB_PATH)) {
-      const initialData: DatabaseSchema = {
+    if (!fs.existsSync(DB_FILE)) {
+      const initial: DbData = {
         profiles: SEED_PROFILES,
         swipes: {},
         matches: [],
       };
-      fs.writeFileSync(DB_PATH, JSON.stringify(initialData, null, 2), 'utf-8');
-      return initialData;
+      fs.writeFileSync(DB_FILE, JSON.stringify(initial, null, 2), 'utf-8');
+      return initial;
     }
 
-    const raw = fs.readFileSync(DB_PATH, 'utf-8');
-    const parsed: DatabaseSchema = JSON.parse(raw);
-    return parsed;
-  } catch (error) {
-    console.error('Error reading database, falling back to seed:', error);
+    const content = fs.readFileSync(DB_FILE, 'utf-8');
+    return JSON.parse(content) as DbData;
+  } catch (err) {
+    console.error('Failed reading db.json, using seed fallback', err);
     return {
       profiles: SEED_PROFILES,
       swipes: {},
@@ -46,46 +46,32 @@ export function getDb(): DatabaseSchema {
   }
 }
 
-export function saveDb(data: DatabaseSchema): void {
+export function saveDb(data: DbData) {
   if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true });
   }
-  // Atomic write via temp file
-  const tempPath = `${DB_PATH}.tmp`;
-  fs.writeFileSync(tempPath, JSON.stringify(data, null, 2), 'utf-8');
-  fs.renameSync(tempPath, DB_PATH);
+  const tmpFile = `${DB_FILE}.tmp`;
+  fs.writeFileSync(tmpFile, JSON.stringify(data, null, 2), 'utf-8');
+  fs.renameSync(tmpFile, DB_FILE);
 }
 
-/**
- * Returns unswiped profiles for the feed.
- * Strips out `hasLikedCurrentUser` to ensure Coy's core privacy guarantee.
- */
 export function getFeedProfiles(): PublicProfile[] {
   const db = getDb();
-  const swipedIds = new Set(Object.keys(db.swipes));
+  const swipedSet = new Set(Object.keys(db.swipes));
 
   return db.profiles
-    .filter((p) => !swipedIds.has(p.id))
-    .map(sanitizeProfile);
+    .filter((p) => !swipedSet.has(p.id))
+    .map(toPublicProfile);
 }
 
-/**
- * Records a swipe (like or pass).
- * If action is 'like' and the target profile had liked the current user,
- * creates a mutual match!
- */
-export function recordSwipe(
-  profileId: string,
-  action: SwipeAction
-): { isMatch: boolean; match?: MatchRecord } {
+export function recordSwipe(profileId: string, action: SwipeAction) {
   const db = getDb();
-  const profile = db.profiles.find((p) => p.id === profileId);
+  const target = db.profiles.find((p) => p.id === profileId);
 
-  if (!profile) {
-    throw new Error(`Profile with id "${profileId}" not found.`);
+  if (!target) {
+    throw new Error(`Profile ${profileId} not found`);
   }
 
-  // Record the swipe to guarantee they never appear in feed again
   db.swipes[profileId] = {
     profileId,
     action,
@@ -93,48 +79,40 @@ export function recordSwipe(
   };
 
   let isMatch = false;
-  let newMatch: MatchRecord | undefined = undefined;
+  let newMatch: MatchRecord | undefined;
 
-  // Match only happens when BOTH users have liked each other
-  if (action === 'like' && profile.hasLikedCurrentUser) {
+  // Mutual match only triggers if both like each other
+  if (action === 'like' && target.hasLikedCurrentUser) {
     isMatch = true;
-    
-    // Avoid duplicate match records
-    const existingMatch = db.matches.find((m) => m.profileId === profileId);
-    if (!existingMatch) {
+
+    const existing = db.matches.find((m) => m.profileId === profileId);
+    if (!existing) {
       newMatch = {
         id: `match_${Date.now()}_${profileId}`,
         profileId,
-        profile: sanitizeProfile(profile),
+        profile: toPublicProfile(target),
         matchedAt: new Date().toISOString(),
       };
       db.matches.unshift(newMatch);
     } else {
-      newMatch = existingMatch;
+      newMatch = existing;
     }
   }
 
   saveDb(db);
-
   return { isMatch, match: newMatch };
 }
 
-/**
- * Returns all mutual matches.
- */
 export function getMatches(): MatchRecord[] {
   const db = getDb();
   return db.matches || [];
 }
 
-/**
- * Resets swipes and matches for easy demo replayability.
- */
-export function resetDemo(): void {
-  const initialData: DatabaseSchema = {
+export function resetDemo() {
+  const fresh: DbData = {
     profiles: SEED_PROFILES,
     swipes: {},
     matches: [],
   };
-  saveDb(initialData);
+  saveDb(fresh);
 }

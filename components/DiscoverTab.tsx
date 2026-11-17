@@ -6,7 +6,7 @@ import { PublicProfile, SwipeAction, MatchRecord } from '@/types';
 import { SwipeCard } from './SwipeCard';
 import { EmptyState } from './EmptyState';
 import { MatchModal } from './MatchModal';
-import { X, Heart, Sparkles, RotateCcw, AlertCircle } from 'lucide-react';
+import { X, Heart, AlertCircle } from 'lucide-react';
 
 interface DiscoverTabProps {
   onOpenMatches: () => void;
@@ -14,11 +14,11 @@ interface DiscoverTabProps {
   matchesCount: number;
 }
 
-export const DiscoverTab: React.FC<DiscoverTabProps> = ({
+export const DiscoverTab = ({
   onOpenMatches,
   onMatchCreated,
   matchesCount,
-}) => {
+}: DiscoverTabProps) => {
   const [profiles, setProfiles] = useState<PublicProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +27,6 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
   const [swipeDirection, setSwipeDirection] = useState<SwipeAction | null>(null);
   const [isResetting, setIsResetting] = useState(false);
 
-  // Fetch unswiped profiles from GET /api/feed (or /feed)
   const fetchFeed = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -37,10 +36,10 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
       if (data.success) {
         setProfiles(data.profiles || []);
       } else {
-        setError(data.error || 'Failed to fetch profiles');
+        setError(data.error || 'Failed to load feed');
       }
     } catch (err: any) {
-      setError(err.message || 'Network error fetching profiles');
+      setError(err?.message || 'Network error');
     } finally {
       setIsLoading(false);
     }
@@ -50,15 +49,13 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
     fetchFeed();
   }, [fetchFeed]);
 
-  // Handle swipe logic (both drag gesture and desktop buttons)
   const handleSwipe = async (action: SwipeAction) => {
-    if (profiles.length === 0 || isSwiping) return;
+    if (!profiles.length || isSwiping) return;
 
-    const currentProfile = profiles[0];
+    const current = profiles[0];
     setIsSwiping(true);
     setSwipeDirection(action);
 
-    // Optimistically update card stack after animation duration
     setTimeout(async () => {
       setProfiles((prev) => prev.slice(1));
       setIsSwiping(false);
@@ -69,7 +66,7 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            profileId: currentProfile.id,
+            profileId: current.id,
             action,
           }),
         });
@@ -80,12 +77,11 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
           onMatchCreated(data.match);
         }
       } catch (err) {
-        console.error('Failed to record swipe:', err);
+        console.error('Error recording swipe:', err);
       }
     }, 220);
   };
 
-  // Reset demo handler
   const handleReset = async () => {
     setIsResetting(true);
     try {
@@ -101,14 +97,11 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
     }
   };
 
-  // Keyboard shortcut listener: Left Arrow for Pass, Right Arrow for Like
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger if typing in an input
+    const onKeyDown = (e: KeyboardEvent) => {
       if (['input', 'textarea'].includes((e.target as HTMLElement).tagName.toLowerCase())) {
         return;
       }
-
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
         handleSwipe('pass');
@@ -118,15 +111,15 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
   }, [profiles, isSwiping]);
 
   if (isLoading) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-12 h-12 rounded-full border-4 border-coy-border border-t-coy-rose animate-spin mb-4" />
-        <p className="text-sm text-gray-400 font-medium">Finding people near you...</p>
+        <div className="w-10 h-10 rounded-full border-2 border-coy-border border-t-coy-rose animate-spin mb-3" />
+        <p className="text-xs text-gray-400">Loading nearby profiles...</p>
       </div>
     );
   }
@@ -134,22 +127,21 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
   if (error) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mb-4 text-rose-400">
-          <AlertCircle className="w-7 h-7" />
+        <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mb-3 text-rose-400">
+          <AlertCircle className="w-6 h-6" />
         </div>
-        <h3 className="text-lg font-bold text-white mb-2">Something went wrong</h3>
-        <p className="text-xs text-gray-400 mb-6 max-w-xs">{error}</p>
+        <h3 className="text-base font-semibold text-white mb-1">Could not load profiles</h3>
+        <p className="text-xs text-gray-400 mb-5 max-w-xs">{error}</p>
         <button
           onClick={fetchFeed}
-          className="px-4 py-2.5 rounded-xl bg-coy-surface border border-coy-border text-white text-xs font-semibold hover:bg-coy-border transition"
+          className="px-4 py-2 rounded-xl bg-coy-surface border border-coy-border text-white text-xs font-medium hover:bg-coy-border transition"
         >
-          Try Again
+          Retry
         </button>
       </div>
     );
   }
 
-  // Clear Empty State when there are no profiles left
   if (profiles.length === 0) {
     return (
       <EmptyState
@@ -166,9 +158,7 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
 
   return (
     <div className="flex-1 flex flex-col items-center justify-between px-4 pb-24 pt-2 w-full max-w-md mx-auto select-none">
-      {/* Cards Stack Container */}
       <div className="relative w-full aspect-[3/4.2] max-h-[580px] my-auto">
-        {/* Next Card in Stack (Peek view) */}
         {nextProfile && (
           <div className="absolute inset-0 scale-[0.94] translate-y-3 opacity-60 transition-all duration-300 pointer-events-none">
             <SwipeCard
@@ -180,7 +170,6 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
           </div>
         )}
 
-        {/* Top Active Card */}
         <AnimatePresence>
           <motion.div
             key={topProfile.id}
@@ -189,9 +178,9 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
               isSwiping
                 ? {
                     x: swipeDirection === 'like' ? 450 : -450,
-                    rotate: swipeDirection === 'like' ? 25 : -25,
+                    rotate: swipeDirection === 'like' ? 22 : -22,
                     opacity: 0,
-                    transition: { duration: 0.22, ease: 'easeOut' },
+                    transition: { duration: 0.2, ease: 'easeOut' },
                   }
                 : {
                     scale: 1,
@@ -212,44 +201,38 @@ export const DiscoverTab: React.FC<DiscoverTabProps> = ({
         </AnimatePresence>
       </div>
 
-      {/* Desktop & Touch Bottom Action Buttons */}
       <div className="w-full flex items-center justify-center gap-6 mt-4">
-        {/* Pass Button */}
         <button
           onClick={() => handleSwipe('pass')}
           disabled={isSwiping}
-          aria-label="Pass profile (Left Arrow)"
+          aria-label="Pass"
           title="Pass (Swipe Left / ← Arrow)"
-          className="w-14 h-14 rounded-full bg-coy-surface border-2 border-rose-500/40 text-rose-500 hover:bg-rose-500 hover:text-white hover:border-rose-500 hover:scale-105 active:scale-95 flex items-center justify-center shadow-lg transition duration-200 disabled:opacity-50"
+          className="w-14 h-14 rounded-full bg-coy-surface border border-rose-500/40 text-rose-500 hover:bg-rose-500 hover:text-white hover:border-rose-500 hover:scale-105 active:scale-95 flex items-center justify-center shadow-lg transition duration-150 disabled:opacity-50"
         >
           <X className="w-7 h-7 stroke-[2.5]" />
         </button>
 
-        {/* Counter Info Badge */}
         <div className="px-3 py-1 rounded-full glass border border-coy-border text-[11px] font-medium text-gray-400">
-          <span>{profiles.length} remaining</span>
+          <span>{profiles.length} left</span>
         </div>
 
-        {/* Like Button */}
         <button
           onClick={() => handleSwipe('like')}
           disabled={isSwiping}
-          aria-label="Like profile (Right Arrow)"
+          aria-label="Like"
           title="Like (Swipe Right / → Arrow)"
-          className="w-14 h-14 rounded-full bg-gradient-coy text-white hover:scale-105 active:scale-95 flex items-center justify-center shadow-xl shadow-coy-rose/30 transition duration-200 disabled:opacity-50"
+          className="w-14 h-14 rounded-full bg-gradient-coy text-white hover:scale-105 active:scale-95 flex items-center justify-center shadow-xl shadow-coy-rose/30 transition duration-150 disabled:opacity-50"
         >
           <Heart className="w-7 h-7 fill-white stroke-[2.5]" />
         </button>
       </div>
 
-      {/* Keyboard Shortcut Hints for Desktop Users */}
-      <div className="hidden sm:flex items-center gap-4 text-[10px] text-gray-400 mt-2">
-        <span>← Left Arrow to Pass</span>
+      <div className="hidden sm:flex items-center gap-3 text-[10px] text-gray-500 mt-2">
+        <span>← Pass</span>
         <span>•</span>
-        <span>Right Arrow to Like →</span>
+        <span>Like →</span>
       </div>
 
-      {/* Celebration Match Modal */}
       {currentMatch && (
         <MatchModal
           match={currentMatch}

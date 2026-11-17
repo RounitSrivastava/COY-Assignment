@@ -1,146 +1,65 @@
-# Coy — Discover Tab 💖
+# Coy — Discover Tab (Assignment Part B)
 
-A mobile-first, swipe-based discovery experience built for **Coy** with mutual privacy guarantees, smooth drag gesture physics, and persistent state across page reloads.
+A swipe-based discovery tab built for Coy's mobile-first web experience.
 
-Built with **Next.js 14 (App Router)**, **TypeScript**, **Tailwind CSS**, and **Framer Motion**.
+## What's Built
+- **Swipe gestures**: Card stack with drag left (pass) and drag right (like) powered by Framer Motion, with responsive rotation, spring physics, and dynamic stamps (`LIKE` / `PASS`).
+- **Desktop support**: On desktop, users can use the Pass (✕) / Like (♥) buttons or keyboard shortcuts (`←` / `→` arrow keys).
+- **Privacy first**: The feed endpoint (`GET /feed`) never leaks whether a profile has liked the current user. A match is only created and revealed on the backend when both users like each other.
+- **32 seeded profiles**: Mock profiles with photos, college/city, bios, and interests. Several profiles have pre-seeded "likes" so matches happen during the demo.
+- **Persistence**: Swipes and matches are stored in `data/db.json` via atomic writes, so swiped profiles never reappear even after page reloads.
+- **"It's a match!" screen**: Confetti burst, matched user details, and a quick-action button to chat.
+- **Matches view**: Lists all mutual matches with an interactive mock chat to test messaging.
+- **Empty state & reset**: Shows a clean empty state when out of profiles, with a "Reset Feed" button in the navbar and on the empty screen to replay the flow.
 
----
+## Tech Stack
+- **Next.js 14** (App Router & Route Handlers)
+- **TypeScript**
+- **Tailwind CSS**
+- **Framer Motion** (drag gestures & card animations)
+- **canvas-confetti** (match celebration)
 
-## 📱 Features
+## Setup & Running Locally
 
-### 1. Profile Data (32 Seeded Profiles)
-- **32 realistic, diverse profiles** featuring names, ages (20–26), high-resolution portrait photos, engaging bios, colleges/cities (e.g. *IIT Bombay, CEPT University, BITS Pilani, NID Ahmedabad, Ashoka University*), and interest tags.
-- **Pre-seeded mutual likers**: Several profiles have secretly already liked the logged-in user so you can experience real matches during demos.
-- **Strict Privacy Guarantee**: The backend never leaks whether another user has liked you in `/feed`. Coy's core promise is that nobody knows unless it's mutual.
-
-### 2. Swipe Experience & Gestures
-- **Card Stack UI**: Physical card stack with depth scaling and layering.
-- **Drag Gestures**: Fluid mobile and touch dragging with responsive rotation, spring bounce, and velocity-based releases.
-- **Dynamic Stamps**: Visual badges (`LIKE` in emerald green, `PASS` in crimson red) that fade in proportionately to drag distance.
-- **Desktop Controls**: Dedicated Pass (✕) and Like (♥) buttons, plus **Keyboard Navigation** (`← Arrow` to Pass, `→ Arrow` to Like).
-- **No Repeat Swipes**: Once swiped, a profile is permanently saved and will never reappear in the feed.
-- **Empty State**: Animated radar pulse screen when all profiles have been swiped, with an instant "Reset Demo" button.
-
-### 3. Mutual Matching
-- **"It's a Match!" Modal**: Triggers exclusively when both users like each other. Displays celebratory confetti bursts (`canvas-confetti`), dual avatar rings, bio preview, and action buttons.
-- **Matches Tab**: Dedicated view listing all mutual matches with photo cards, timestamp, and a tap-to-chat interface with instant reply simulations.
-
-### 4. Backend APIs & Persistence
-- `GET /feed` (and `/api/feed`): Returns all profiles the user has not yet swiped on (sanitized without `hasLikedCurrentUser`).
-- `POST /swipe` (and `/api/swipe`): Records a `'like'` or `'pass'` action and returns whether it created a mutual match.
-- `GET /matches` (and `/api/matches`): Returns the user's mutual matches.
-- `POST /api/reset`: Resets demo database back to 32 fresh profiles.
-- **Persistence**: All swipes and matches are saved to disk (`data/db.json`) and persist across page reloads and server restarts.
-
----
-
-## 🛠️ Tech Stack
-
-- **Framework**: [Next.js 14](https://nextjs.org/) (App Router & Route Handlers)
-- **Language**: [TypeScript](https://www.typescriptlang.org/)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-- **Animations & Gestures**: [Framer Motion](https://www.framer.com/motion/)
-- **Celebration Effects**: [Canvas Confetti](https://www.npmjs.com/package/canvas-confetti)
-- **Icons**: [Lucide React](https://lucide.dev/)
-- **Database**: Atomic JSON file store (`data/db.json`) for zero-config persistence on any platform.
-
----
-
-## 🚀 Getting Started
-
-### 1. Install Dependencies
+1. Install dependencies:
 ```bash
 npm install
 ```
 
-### 2. Start the Development Server
+2. Run the dev server:
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser (preferably in mobile view or responsive mode).
+Open [http://localhost:3000](http://localhost:3000). For the best experience, toggle device emulation in Chrome DevTools (`Cmd+Shift+M` or `Ctrl+Shift+M`) to see the mobile view.
 
-### 3. Or Build & Run Production Server
+3. To create a production build:
 ```bash
 npm run build
 npm start
 ```
 
----
+## API Endpoints
 
-## 🧪 Testing the APIs
+- `GET /feed` — returns unswiped profiles (sanitized without `hasLikedCurrentUser`).
+- `POST /swipe` — accepts `{ profileId: string, action: 'like' | 'pass' }`. Returns `{ success: true, isMatch: boolean, match?: ... }`.
+- `GET /matches` — returns all mutual matches for the user.
+- `POST /api/reset` — helper endpoint that clears swipes/matches and resets back to 32 profiles for demo purposes.
 
-You can test the APIs directly using cURL or any HTTP client:
+*(Note: route rewrites in `next.config.mjs` ensure both `/feed` and `/api/feed` work identically).*
 
-### Get Feed:
-```bash
-curl http://localhost:3000/feed
-```
+## Code Structure
 
-### Record a Swipe (Pass):
-```bash
-curl -X POST http://localhost:3000/swipe \
-  -H "Content-Type: application/json" \
-  -d '{"profileId": "prof_01", "action": "pass"}'
-```
-
-### Record a Swipe (Like - triggers match on pre-seeded liker prof_02):
-```bash
-curl -X POST http://localhost:3000/swipe \
-  -H "Content-Type: application/json" \
-  -d '{"profileId": "prof_02", "action": "like"}'
-```
-
-### Get Mutual Matches:
-```bash
-curl http://localhost:3000/matches
-```
-
-### Reset Demo:
-```bash
-curl -X POST http://localhost:3000/api/reset
-```
-
----
-
-## 📂 Project Structure
-
-```text
-├── app/
-│   ├── api/
-│   │   ├── feed/route.ts      # GET /api/feed
-│   │   ├── swipe/route.ts     # POST /api/swipe
-│   │   ├── matches/route.ts   # GET /api/matches
-│   │   └── reset/route.ts     # POST /api/reset
-│   ├── feed/route.ts          # Direct GET /feed
-│   ├── swipe/route.ts         # Direct POST /swipe
-│   ├── matches/route.ts       # Direct GET /matches
-│   ├── globals.css            # Custom styles & Coy themes
-│   ├── layout.tsx             # Root layout & metadata
-│   └── page.tsx               # Main mobile container & tabs
-├── components/
-│   ├── DiscoverTab.tsx        # Core swipe stack & desktop controls
-│   ├── SwipeCard.tsx          # Card drag physics, stamps, & bio details
-│   ├── MatchModal.tsx         # "It's a Match!" screen & confetti
-│   ├── MatchesTab.tsx         # Mutual matches grid & chat simulator
-│   ├── EmptyState.tsx         # Radar pulse when out of profiles
-│   ├── HomeTab.tsx            # Clean placeholder Home tab
-│   ├── Navbar.tsx             # Coy header, match counter, & reset button
-│   └── TabBar.tsx             # Bottom mobile tab navigation
-├── lib/
-│   ├── db.ts                  # Persistent storage & privacy sanitation
-│   └── seedData.ts            # 32 high quality mock profiles
-├── types/
-│   └── index.ts               # TypeScript interfaces & types
-└── data/
-    └── db.json                # JSON database store
-```
-
----
-
-## 🔒 Privacy Architecture Note
-
-In dating apps, leaks often happen when client-side state includes flags like `hasLikedYou` or `isMatchCandidate`. In this application:
-1. The `hasLikedCurrentUser` field is exclusively stored on the server.
-2. The `getFeedProfiles()` function strictly strips out `hasLikedCurrentUser` before returning JSON to the client.
-3. Matches are calculated server-side only when a mutual `like` action is submitted.
+- `app/`
+  - `page.tsx`: Shell with tab switcher (Home, Discover, Matches) and top navbar.
+  - `feed/route.ts`, `swipe/route.ts`, `matches/route.ts`: API route handlers matching assignment requirements.
+- `components/`
+  - `DiscoverTab.tsx`: Card stack orchestration, keyboard listeners, and action buttons.
+  - `SwipeCard.tsx`: Draggable card component with spring release and stamp overlays.
+  - `MatchModal.tsx`: Celebration popup when a mutual match occurs.
+  - `MatchesTab.tsx`: Mutual matches list with interactive chat preview.
+  - `EmptyState.tsx`: Out-of-profiles screen.
+  - `Navbar.tsx` & `TabBar.tsx`: Mobile header and bottom navigation.
+- `lib/`
+  - `db.ts`: File-backed storage logic and privacy sanitizer (`toPublicProfile`).
+  - `seedData.ts`: 32 diverse profile objects.

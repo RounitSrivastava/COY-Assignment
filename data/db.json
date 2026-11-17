@@ -481,6 +481,47 @@
       "hasLikedCurrentUser": false
     }
   ],
-  "swipes": {},
-  "matches": []
+  "swipes": {
+    "prof_01": {
+      "profileId": "prof_01",
+      "action": "like",
+      "timestamp": "2026-11-17T17:27:07.447Z"
+    },
+    "prof_02": {
+      "profileId": "prof_02",
+      "action": "like",
+      "timestamp": "2026-11-17T17:27:08.723Z"
+    },
+    "prof_03": {
+      "profileId": "prof_03",
+      "action": "pass",
+      "timestamp": "2026-11-17T17:28:00.718Z"
+    },
+    "prof_04": {
+      "profileId": "prof_04",
+      "action": "pass",
+      "timestamp": "2026-11-17T17:28:01.839Z"
+    }
+  },
+  "matches": [
+    {
+      "id": "match_1794936428723_prof_02",
+      "profileId": "prof_02",
+      "profile": {
+        "id": "prof_02",
+        "name": "Rohan Mehra",
+        "age": 24,
+        "photo": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=800&q=80",
+        "bio": "Fintech dev by day, amateur stand-up comic by night. Will cook you authentic carbonara on the second date.",
+        "cityOrCollege": "BITS Pilani",
+        "interests": [
+          "Cooking",
+          "Stand-up Comedy",
+          "Indie Rock",
+          "Bouldering"
+        ]
+      },
+      "matchedAt": "2026-11-17T17:27:08.723Z"
+    }
+  ]
 }

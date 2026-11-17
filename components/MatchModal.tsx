@@ -12,55 +12,21 @@ interface MatchModalProps {
   onOpenMatches: () => void;
 }
 
-export const MatchModal: React.FC<MatchModalProps> = ({
+export const MatchModal = ({
   match,
   onClose,
   onOpenMatches,
-}) => {
-  // Fire celebratory confetti on mount
+}: MatchModalProps) => {
   useEffect(() => {
     try {
-      const count = 200;
-      const defaults = {
-        origin: { y: 0.7 },
-        zIndex: 9999,
-      };
-
-      const fire = (particleRatio: number, opts: confetti.Options) => {
-        confetti({
-          ...defaults,
-          ...opts,
-          particleCount: Math.floor(count * particleRatio),
-        });
-      };
-
-      fire(0.25, {
-        spread: 26,
-        startVelocity: 55,
+      confetti({
+        particleCount: 80,
+        spread: 70,
+        origin: { y: 0.6 },
         colors: ['#FF3366', '#FF5E62', '#FFFFFF'],
       });
-      fire(0.2, {
-        spread: 60,
-        colors: ['#FF5E62', '#FF8A00', '#FF3366'],
-      });
-      fire(0.35, {
-        spread: 100,
-        decay: 0.91,
-        scalar: 0.8,
-        colors: ['#FF3366', '#FFB7B2', '#FFFFFF'],
-      });
-      fire(0.1, {
-        spread: 120,
-        startVelocity: 25,
-        decay: 0.92,
-        scalar: 1.2,
-      });
-      fire(0.1, {
-        spread: 120,
-        startVelocity: 45,
-      });
-    } catch (err) {
-      console.log('Confetti effect failed', err);
+    } catch {
+      // ignore if canvas not supported
     }
   }, []);
 
@@ -70,7 +36,6 @@ export const MatchModal: React.FC<MatchModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
       <div className="relative w-full max-w-sm rounded-3xl glass border border-coy-border/80 p-6 flex flex-col items-center text-center shadow-2xl">
-        {/* Close Button */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white transition"
@@ -79,13 +44,11 @@ export const MatchModal: React.FC<MatchModalProps> = ({
           <X className="w-4 h-4" />
         </button>
 
-        {/* Sparkle Badge */}
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-coy text-white text-xs font-semibold mb-3 shadow-md shadow-coy-rose/30">
           <Sparkles className="w-3.5 h-3.5 fill-white" />
           <span>Mutual Connection</span>
         </div>
 
-        {/* Headline */}
         <h2 className="text-3xl font-black tracking-tight text-white mb-1">
           It&apos;s a Match!
         </h2>
@@ -93,9 +56,7 @@ export const MatchModal: React.FC<MatchModalProps> = ({
           You and <span className="font-semibold text-white">{match.profile.name}</span> liked each other.
         </p>
 
-        {/* Avatar Interlocking Circles */}
         <div className="relative flex items-center justify-center mb-6">
-          {/* Current User Avatar */}
           <div className="w-24 h-24 rounded-full border-4 border-coy-rose shadow-xl overflow-hidden relative -mr-4 z-10">
             <Image
               src={currentUserPhoto}
@@ -106,12 +67,10 @@ export const MatchModal: React.FC<MatchModalProps> = ({
             />
           </div>
 
-          {/* Glowing Heart Connector */}
           <div className="w-10 h-10 rounded-full bg-gradient-coy border-2 border-coy-dark flex items-center justify-center z-30 shadow-lg animate-bounce-short">
             <Heart className="w-5 h-5 text-white fill-white" />
           </div>
 
-          {/* Matched Profile Avatar */}
           <div className="w-24 h-24 rounded-full border-4 border-coy-coral shadow-xl overflow-hidden relative -ml-4 z-20">
             <Image
               src={match.profile.photo}
@@ -123,7 +82,6 @@ export const MatchModal: React.FC<MatchModalProps> = ({
           </div>
         </div>
 
-        {/* Bio summary */}
         <div className="w-full bg-coy-surface/80 rounded-2xl p-3 border border-coy-border mb-6">
           <p className="text-xs text-gray-300 italic">
             &ldquo;{match.profile.bio}&rdquo;
@@ -133,7 +91,6 @@ export const MatchModal: React.FC<MatchModalProps> = ({
           </p>
         </div>
 
-        {/* Action Buttons */}
         <div className="flex flex-col gap-2.5 w-full">
           <button
             onClick={() => {
