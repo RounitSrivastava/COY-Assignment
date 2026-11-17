@@ -17,17 +17,17 @@ export const Navbar = ({
   isResetting = false,
 }: NavbarProps) => {
   return (
-    <header className="sticky top-0 z-40 w-full glass border-b border-coy-border/60 px-4 py-3">
-      <div className="max-w-md mx-auto flex items-center justify-between">
+    <header className="shrink-0 w-full glass border-b border-coy-border/60 px-4 py-2.5 z-30">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-coy flex items-center justify-center shadow-lg shadow-coy-rose/30">
-            <Flame className="w-5 h-5 text-white fill-white" />
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-coy flex items-center justify-center shadow-lg shadow-coy-rose/30">
+            <Flame className="w-4 h-4 sm:w-5 sm:h-5 text-white fill-white" />
           </div>
           <div className="flex items-baseline gap-1.5">
-            <span className="font-extrabold text-xl tracking-tight text-white">
+            <span className="font-extrabold text-lg sm:text-xl tracking-tight text-white">
               Coy
             </span>
-            <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-coy-surface text-coy-300 border border-coy-border">
+            <span className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-coy-surface text-coy-300 border border-coy-border">
               Discover
             </span>
           </div>
@@ -36,7 +36,7 @@ export const Navbar = ({
         <div className="flex items-center gap-2">
           <button
             onClick={onOpenMatches}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-coy-surface hover:bg-coy-border/80 border border-coy-border transition text-xs font-medium text-white group"
+            className="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-coy-surface hover:bg-coy-border/80 border border-coy-border transition text-xs font-medium text-white group"
             title="Matches"
           >
             <Heart className="w-3.5 h-3.5 text-coy-rose fill-coy-rose transition group-hover:scale-110" />
@@ -46,11 +46,11 @@ export const Navbar = ({
           <button
             onClick={onReset}
             disabled={isResetting}
-            className="p-1.5 rounded-full bg-coy-surface hover:bg-coy-border border border-coy-border text-gray-300 hover:text-white transition disabled:opacity-50"
+            className="p-1 sm:p-1.5 rounded-full bg-coy-surface hover:bg-coy-border border border-coy-border text-gray-300 hover:text-white transition disabled:opacity-50"
             title="Reset feed"
           >
             <RotateCcw
-              className={`w-4 h-4 ${isResetting ? 'animate-spin text-coy-rose' : ''}`}
+              className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isResetting ? 'animate-spin text-coy-rose' : ''}`}
             />
           </button>
         </div>

@@ -117,7 +117,7 @@ export const DiscoverTab = ({
 
   if (isLoading) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+      <div className="flex-1 min-h-0 flex flex-col items-center justify-center p-6 text-center">
         <div className="w-10 h-10 rounded-full border-2 border-coy-border border-t-coy-rose animate-spin mb-3" />
         <p className="text-xs text-gray-400">Loading nearby profiles...</p>
       </div>
@@ -126,7 +126,7 @@ export const DiscoverTab = ({
 
   if (error) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+      <div className="flex-1 min-h-0 flex flex-col items-center justify-center p-6 text-center">
         <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mb-3 text-rose-400">
           <AlertCircle className="w-6 h-6" />
         </div>
@@ -157,59 +157,63 @@ export const DiscoverTab = ({
   const nextProfile = profiles.length > 1 ? profiles[1] : null;
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-between px-4 pb-24 pt-2 w-full max-w-md mx-auto select-none">
-      <div className="relative w-full aspect-[3/4.2] max-h-[580px] my-auto">
-        {nextProfile && (
-          <div className="absolute inset-0 scale-[0.94] translate-y-3 opacity-60 transition-all duration-300 pointer-events-none">
-            <SwipeCard
-              key={nextProfile.id}
-              profile={nextProfile}
-              isTop={false}
-              onSwipe={() => {}}
-            />
-          </div>
-        )}
+    <div className="flex-1 min-h-0 flex flex-col justify-between items-center px-3 py-1.5 w-full select-none overflow-hidden">
+      {/* Card stack area - responsive fit within available height */}
+      <div className="flex-1 min-h-0 w-full flex items-center justify-center relative my-1">
+        <div className="relative w-full h-full max-h-[460px] sm:max-h-[500px] aspect-[3/4.2]">
+          {nextProfile && (
+            <div className="absolute inset-0 scale-[0.95] translate-y-2.5 opacity-60 transition-all duration-300 pointer-events-none">
+              <SwipeCard
+                key={nextProfile.id}
+                profile={nextProfile}
+                isTop={false}
+                onSwipe={() => {}}
+              />
+            </div>
+          )}
 
-        <AnimatePresence>
-          <motion.div
-            key={topProfile.id}
-            initial={{ scale: 0.96, opacity: 0 }}
-            animate={
-              isSwiping
-                ? {
-                    x: swipeDirection === 'like' ? 450 : -450,
-                    rotate: swipeDirection === 'like' ? 22 : -22,
-                    opacity: 0,
-                    transition: { duration: 0.2, ease: 'easeOut' },
-                  }
-                : {
-                    scale: 1,
-                    opacity: 1,
-                    x: 0,
-                    rotate: 0,
-                    transition: { duration: 0.2 },
-                  }
-            }
-            className="absolute inset-0"
-          >
-            <SwipeCard
-              profile={topProfile}
-              isTop={!isSwiping}
-              onSwipe={handleSwipe}
-            />
-          </motion.div>
-        </AnimatePresence>
+          <AnimatePresence>
+            <motion.div
+              key={topProfile.id}
+              initial={{ scale: 0.96, opacity: 0 }}
+              animate={
+                isSwiping
+                  ? {
+                      x: swipeDirection === 'like' ? 450 : -450,
+                      rotate: swipeDirection === 'like' ? 20 : -20,
+                      opacity: 0,
+                      transition: { duration: 0.2, ease: 'easeOut' },
+                    }
+                  : {
+                      scale: 1,
+                      opacity: 1,
+                      x: 0,
+                      rotate: 0,
+                      transition: { duration: 0.18 },
+                    }
+              }
+              className="absolute inset-0"
+            >
+              <SwipeCard
+                profile={topProfile}
+                isTop={!isSwiping}
+                onSwipe={handleSwipe}
+              />
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
 
-      <div className="w-full flex items-center justify-center gap-6 mt-4">
+      {/* Action controls - always visible above tab bar */}
+      <div className="shrink-0 w-full flex items-center justify-center gap-5 pt-1.5 pb-1">
         <button
           onClick={() => handleSwipe('pass')}
           disabled={isSwiping}
           aria-label="Pass"
           title="Pass (Swipe Left / ← Arrow)"
-          className="w-14 h-14 rounded-full bg-coy-surface border border-rose-500/40 text-rose-500 hover:bg-rose-500 hover:text-white hover:border-rose-500 hover:scale-105 active:scale-95 flex items-center justify-center shadow-lg transition duration-150 disabled:opacity-50"
+          className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-coy-surface border border-rose-500/40 text-rose-500 hover:bg-rose-500 hover:text-white hover:border-rose-500 hover:scale-105 active:scale-95 flex items-center justify-center shadow-lg transition duration-150 disabled:opacity-50"
         >
-          <X className="w-7 h-7 stroke-[2.5]" />
+          <X className="w-6 h-6 sm:w-7 sm:h-7 stroke-[2.5]" />
         </button>
 
         <div className="px-3 py-1 rounded-full glass border border-coy-border text-[11px] font-medium text-gray-400">
@@ -221,13 +225,13 @@ export const DiscoverTab = ({
           disabled={isSwiping}
           aria-label="Like"
           title="Like (Swipe Right / → Arrow)"
-          className="w-14 h-14 rounded-full bg-gradient-coy text-white hover:scale-105 active:scale-95 flex items-center justify-center shadow-xl shadow-coy-rose/30 transition duration-150 disabled:opacity-50"
+          className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-coy text-white hover:scale-105 active:scale-95 flex items-center justify-center shadow-xl shadow-coy-rose/30 transition duration-150 disabled:opacity-50"
         >
-          <Heart className="w-7 h-7 fill-white stroke-[2.5]" />
+          <Heart className="w-6 h-6 sm:w-7 sm:h-7 fill-white stroke-[2.5]" />
         </button>
       </div>
 
-      <div className="hidden sm:flex items-center gap-3 text-[10px] text-gray-500 mt-2">
+      <div className="hidden sm:flex items-center gap-3 text-[10px] text-gray-500 pb-0.5">
         <span>← Pass</span>
         <span>•</span>
         <span>Like →</span>

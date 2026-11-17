@@ -52,43 +52,47 @@ export default function Page() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0e0e12] relative overflow-hidden">
+    <div className="flex flex-col h-full h-[100dvh] max-h-[100dvh] bg-[#09090c] relative overflow-hidden select-none">
+      {/* Ambient background glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-gradient-to-b from-coy-rose/15 via-coy-coral/10 to-transparent blur-[120px] pointer-events-none" />
 
-      <Navbar
-        matchesCount={matches.length}
-        onOpenMatches={() => setActiveTab('matches')}
-        onReset={handleResetDemo}
-        isResetting={isResetting}
-      />
+      {/* Centered mobile-first application shell */}
+      <div className="flex flex-col h-full w-full max-w-md mx-auto relative z-10 sm:border-x sm:border-coy-border/30 bg-[#0e0e12] sm:shadow-2xl overflow-hidden">
+        <Navbar
+          matchesCount={matches.length}
+          onOpenMatches={() => setActiveTab('matches')}
+          onReset={handleResetDemo}
+          isResetting={isResetting}
+        />
 
-      <main className="flex-1 flex flex-col max-w-md mx-auto w-full relative z-10 overflow-hidden">
-        {activeTab === 'home' && (
-          <HomeTab onGoToDiscover={() => setActiveTab('discover')} />
-        )}
+        <main className="flex-1 min-h-0 flex flex-col w-full relative overflow-hidden">
+          {activeTab === 'home' && (
+            <HomeTab onGoToDiscover={() => setActiveTab('discover')} />
+          )}
 
-        {activeTab === 'discover' && (
-          <DiscoverTab
-            key={discoverKey}
-            onOpenMatches={() => setActiveTab('matches')}
-            onMatchCreated={handleMatchCreated}
-            matchesCount={matches.length}
-          />
-        )}
+          {activeTab === 'discover' && (
+            <DiscoverTab
+              key={discoverKey}
+              onOpenMatches={() => setActiveTab('matches')}
+              onMatchCreated={handleMatchCreated}
+              matchesCount={matches.length}
+            />
+          )}
 
-        {activeTab === 'matches' && (
-          <MatchesTab
-            matches={matches}
-            onGoToDiscover={() => setActiveTab('discover')}
-          />
-        )}
-      </main>
+          {activeTab === 'matches' && (
+            <MatchesTab
+              matches={matches}
+              onGoToDiscover={() => setActiveTab('discover')}
+            />
+          )}
+        </main>
 
-      <TabBar
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        matchesCount={matches.length}
-      />
+        <TabBar
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          matchesCount={matches.length}
+        />
+      </div>
     </div>
   );
 }
