@@ -1,0 +1,280 @@
+'use client';
+
+import React, { useState } from 'react';
+import Image from 'next/image';
+import { MatchRecord } from '@/types';
+import { Heart, MessageCircle, MapPin, Sparkles, Send, X, ArrowLeft } from 'lucide-react';
+
+interface MatchesTabProps {
+  matches: MatchRecord[];
+  onGoToDiscover: () => void;
+}
+
+export const MatchesTab: React.FC<MatchesTabProps> = ({
+  matches,
+  onGoToDiscover,
+}) => {
+  const [activeChatMatch, setActiveChatMatch] = useState<MatchRecord | null>(null);
+  const [messages, setMessages] = useState<Record<string, Array<{ text: string; sender: 'me' | 'them'; time: string }>>>({});
+  const [inputText, setInputText] = useState('');
+
+  const handleSendMessage = (matchId: string) => {
+    if (!inputText.trim()) return;
+
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const newMsg = { text: inputText.trim(), sender: 'me' as const, time };
+
+    setMessages((prev) => ({
+      ...prev,
+      [matchId]: [...(prev[matchId] || []), newMsg],
+    }));
+    setInputText('');
+
+    // Simulated sweet reply after 1.2s for interactive demo feel
+    setTimeout(() => {
+      const matchName = activeChatMatch?.profile.name.split(' ')[0] || 'They';
+      const sampleReplies = [
+        `Hey! So glad we matched ✨ Loved your vibe.`,
+        `Hi there! Great taste in music by the way 😊`,
+        `Hey! I was hoping you'd swipe right! How's your week going?`,
+        `Haha, hey! What's the story behind your bio?`,
+      ];
+      const reply = sampleReplies[Math.floor(Math.random() * sampleReplies.length)];
+      const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      setMessages((prev) => ({
+        ...prev,
+        [matchId]: [
+          ...(prev[matchId] || []),
+          { text: reply, sender: 'them' as const, time: replyTime },
+        ],
+      }));
+    }, 1200);
+  };
+
+  return (
+    <div className="flex-1 flex flex-col px-4 pb-24 pt-2 w-full max-w-md mx-auto animate-fade-in">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <span>Matches</span>
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gradient-coy text-white">
+              {matches.length}
+            </span>
+          </h2>
+          <p className="text-xs text-gray-400">
+            Mutual likes only. Private &amp; secure by Coy.
+          </p>
+        </div>
+      </div>
+
+      {/* Empty State */}
+      {matches.length === 0 ? (
+        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center my-auto">
+          <div className="w-16 h-16 rounded-3xl bg-coy-surface border border-coy-border flex items-center justify-center mb-4 text-coy-rose">
+            <Heart className="w-8 h-8 fill-coy-rose/20 stroke-[2]" />
+          </div>
+          <h3 className="text-lg font-bold text-white mb-1">No Matches Yet</h3>
+          <p className="text-xs text-gray-400 max-w-xs mb-6">
+            When you and someone else both like each other, your match will appear here. Keep discovering!
+          </p>
+          <button
+            onClick={onGoToDiscover}
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-coy text-white text-xs font-semibold shadow-lg shadow-coy-rose/30 hover:opacity-95 transition"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Discover People</span>
+          </button>
+        </div>
+      ) : (
+        /* Matches Grid */
+        <div className="grid grid-cols-2 gap-3 overflow-y-auto pb-4">
+          {matches.map((item) => (
+            <div
+              key={item.id}
+              onClick={() => setActiveChatMatch(item)}
+              className="group relative rounded-2xl overflow-hidden glass border border-coy-border hover:border-coy-rose/50 transition cursor-pointer shadow-lg aspect-[3/4]"
+            >
+              {/* Photo */}
+              <Image
+                src={item.profile.photo}
+                alt={item.profile.name}
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                sizes="(max-width: 480px) 50vw, 200px"
+              />
+
+              {/* Gradient Scrim */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+
+              {/* Match Badge */}
+              <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-gradient-coy text-white text-[10px] font-bold shadow-md flex items-center gap-1">
+                <Heart className="w-2.5 h-2.5 fill-white" />
+                <span>Match</span>
+              </div>
+
+              {/* Profile Details at bottom */}
+              <div className="absolute bottom-0 inset-x-0 p-3 text-white">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="font-bold text-sm truncate">
+                    {item.profile.name}
+                  </span>
+                  <span className="text-xs text-gray-300">
+                    {item.profile.age}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-1 text-[10px] text-gray-300 mt-0.5 truncate">
+                  <MapPin className="w-3 h-3 text-coy-rose shrink-0" />
+                  <span className="truncate">{item.profile.cityOrCollege}</span>
+                </div>
+
+                <div className="mt-2 flex items-center justify-between">
+                  <span className="text-[10px] text-coy-300 font-medium">
+                    Tap to chat
+                  </span>
+                  <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-coy-rose transition">
+                    <MessageCircle className="w-3.5 h-3.5 text-white" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Interactive Chat Modal */}
+      {activeChatMatch && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+          <div className="relative w-full max-w-sm h-[580px] rounded-3xl glass border border-coy-border flex flex-col overflow-hidden shadow-2xl">
+            {/* Chat Header */}
+            <div className="px-4 py-3 bg-coy-surface/90 border-b border-coy-border flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setActiveChatMatch(null)}
+                  className="p-1 rounded-full hover:bg-white/10 text-gray-300 hover:text-white transition"
+                  aria-label="Back"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+
+                <div className="relative w-10 h-10 rounded-full overflow-hidden border border-coy-border">
+                  <Image
+                    src={activeChatMatch.profile.photo}
+                    alt={activeChatMatch.profile.name}
+                    fill
+                    className="object-cover"
+                    sizes="40px"
+                  />
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-sm text-white">
+                    {activeChatMatch.profile.name}, {activeChatMatch.profile.age}
+                  </h4>
+                  <p className="text-[10px] text-emerald-400 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    Mutual Match
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setActiveChatMatch(null)}
+                className="p-1.5 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Chat Messages Body */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {/* Match Banner inside chat */}
+              <div className="text-center py-2">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-coy-surface border border-coy-border text-[11px] text-gray-300">
+                  <Heart className="w-3 h-3 text-coy-rose fill-coy-rose" />
+                  <span>Matched on Coy</span>
+                </div>
+                <p className="text-[11px] text-gray-500 mt-2">
+                  Break the ice! Say something coy.
+                </p>
+              </div>
+
+              {/* Quick Icebreaker Pills */}
+              {(!messages[activeChatMatch.id] || messages[activeChatMatch.id].length === 0) && (
+                <div className="flex flex-col gap-1.5 pt-2">
+                  {[
+                    `Hey! Loved your bio about ${activeChatMatch.profile.interests[0] || 'travel'} 👋`,
+                    `Coffee or tea? The most important first question ☕`,
+                    `Hey ${activeChatMatch.profile.name.split(' ')[0]}! Great taste in music 🎶`,
+                  ].map((icebreaker, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setInputText(icebreaker);
+                      }}
+                      className="text-left text-xs p-2 rounded-xl bg-coy-surface/60 hover:bg-coy-surface border border-coy-border/60 text-gray-300 hover:text-white transition"
+                    >
+                      💡 {icebreaker}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Message History */}
+              {(messages[activeChatMatch.id] || []).map((msg, index) => (
+                <div
+                  key={index}
+                  className={`flex flex-col ${
+                    msg.sender === 'me' ? 'items-end' : 'items-start'
+                  }`}
+                >
+                  <div
+                    className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-xs leading-relaxed ${
+                      msg.sender === 'me'
+                        ? 'bg-gradient-coy text-white rounded-br-none shadow-md'
+                        : 'bg-coy-surface border border-coy-border text-gray-200 rounded-bl-none'
+                    }`}
+                  >
+                    {msg.text}
+                  </div>
+                  <span className="text-[9px] text-gray-500 mt-1 px-1">
+                    {msg.time}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Chat Input Bar */}
+            <div className="p-3 bg-coy-surface/90 border-t border-coy-border">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSendMessage(activeChatMatch.id);
+                }}
+                className="flex items-center gap-2"
+              >
+                <input
+                  type="text"
+                  placeholder="Type a message..."
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  className="flex-1 bg-coy-dark border border-coy-border rounded-xl px-3.5 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-coy-rose"
+                />
+                <button
+                  type="submit"
+                  disabled={!inputText.trim()}
+                  className="p-2 rounded-xl bg-gradient-coy text-white disabled:opacity-40 transition shadow-md"
+                  aria-label="Send"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
